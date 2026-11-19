@@ -1,0 +1,46 @@
+# Publica l'aplicació a GitHub Pages i genera «fitxers.json»
+# (la llista de lletres, àudios i vídeos que llegeix l'aplicació).
+name: Publicar l'aplicació
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generar la llista de fitxers
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          out = subprocess.run(['git', 'ls-tree', '-r', '-t', '-z', 'HEAD'], capture_output=True, check=True).stdout.decode('utf-8')
+          items = []
+          for rec in out.split('\0'):
+              if not rec:
+                  continue
+              meta, path = rec.split('\t', 1)
+              mode, typ, sha = meta.split()
+              if path.startswith('.'):
+                  continue
+              items.append({'path': path, 'type': 'dir' if typ == 'tree' else 'file', 'sha': sha})
+          with open('fitxers.json', 'w', encoding='utf-8') as f:
+              json.dump(items, f, ensure_ascii=False)
+          print(len(items), 'elements')
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deploy
+        uses: actions/deploy-pages@v4
