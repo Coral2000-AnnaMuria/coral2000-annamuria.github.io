@@ -3,10 +3,6 @@
   "nombre": "Joan Ramon",
   "rol": "editor"
  },
- "3e78b0ae796e2443ebfa9ecf533c19b8bc18b64dde29ab07664b043e7791e806": {
-  "nombre": "Mercè",
-  "rol": "lector"
- },
  "f14a8721ca574218c3ed30cb5735f6b7274711152dcba909fc1774981536b944": {
   "nombre": "Anna",
   "rol": "editor"
@@ -225,6 +221,10 @@
  },
  "506ad3bec3a042d9bb2d486b08c2411d4e6fccf83360b762c23a3643d379306d": {
   "nombre": "Usuari 12",
+  "rol": "lector"
+ },
+ "3e78b0ae796e2443ebfa9ecf533c19b8bc18b64dde29ab07664b043e7791e806": {
+  "nombre": "Mercè Puig",
   "rol": "lector"
  }
 }
