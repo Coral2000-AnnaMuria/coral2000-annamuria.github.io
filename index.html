@@ -337,18 +337,40 @@ async function llegeix(nom, buit, ambSha) {
   return r.json();
 }
 // Llegeix el fitxer actual, hi aplica el canvi i el desa. Si algú l'ha canviat alhora, ho torna a provar.
-async function modifica(nom, buit, canvi, missatge) {
+async function modifica(nom, buit, canvi, missatge) { return modificaUrl(D_API + nom + '.json', buit, canvi, missatge); }
+// Llegeix i desa un fitxer qualsevol de GitHub per la seva adreça de l'API (amb la clau d'editor).
+async function llegeixUrl(url, buit, ambSha) {
+  const r = await fetch(`${url}?ref=main&nc=${Date.now()}`, { headers: ghHead(), cache: 'no-store' });
+  if (r.status === 404) return ambSha ? { dades: buit, sha: null } : buit;
+  if (!r.ok) throw { code: r.status };
+  const j = await r.json(), dades = JSON.parse(b64dec(j.content));
+  return ambSha ? { dades, sha: j.sha } : dades;
+}
+async function modificaUrl(url, buit, canvi, missatge) {
   for (let i = 0; i < 3; i++) {
-    const { dades, sha } = await llegeix(nom, buit, true);
+    const { dades, sha } = await llegeixUrl(url, buit, true);
     const noves = canvi(dades);
     const body = { message: missatge, content: b64enc(JSON.stringify(noves, null, 1) + '\n'), branch: 'main' };
     if (sha) body.sha = sha;
-    const r = await fetch(D_API + nom + '.json', { method: 'PUT', headers: { ...ghHead(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const r = await fetch(url, { method: 'PUT', headers: { ...ghHead(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     if (r.ok) return noves;
     if (r.status !== 409 && r.status !== 422) throw { code: r.status };
   }
   throw { code: 409 };
 }
+// Els telèfons reals es guarden al repositori PRIVAT «coral2000-privat» (fitxer telefons.json: codi → telèfon).
+// Només el poden llegir els editors, si la seva clau té accés a aquest repositori.
+const P_REPO = `https://api.github.com/repos/${D_OWNER}/coral2000-privat`;
+const P_TEL = `${P_REPO}/contents/telefons.json`;
+async function llegeixTelefons() {
+  const t = await llegeixUrl(P_TEL, null);
+  if (t) return t;
+  const r = await fetch(P_REPO, { headers: ghHead(), cache: 'no-store' });   // 404 = la clau no hi té accés
+  if (!r.ok) throw { code: 'priv' };
+  return {};
+}
+const desaTelefons = (canvi, msg) => modificaUrl(P_TEL, {}, canvi, msg).catch(e => { throw { code: 'priv' }; });
+const fmtTel = t => t ? t.replace(/^(\d{3})(\d{2})(\d{2})(\d{2})$/, '$1 $2 $3 $4') : '';
 async function clauValida(k) {
   try { return (await fetch(`${D_API}usuaris.json?ref=main`, { headers: ghHead(k), cache: 'no-store' })).ok; } catch (e) { return false; }
 }
@@ -1046,7 +1068,8 @@ function formataInfo(txt) {
   return out;
 }
 const dataInfo = ts => ts ? new Date(ts).toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-const errFs = e => e && [401, 403, 404].includes(e.code)
+const ERR_PRIV = "La teva clau d'editor no té accés al repositori privat «coral2000-privat», on es guarden els telèfons. Demana a l'administrador que l'hi afegeixi.";
+const errFs = e => e && e.code === 'priv' ? ERR_PRIV : e && [401, 403, 404].includes(e.code)
   ? "La teva clau d'editor no és vàlida o no té permís per desar. Demana'n una de nova a l'administrador."
   : "No s'ha pogut completar. Revisa la connexió i torna-ho a provar.";
 let infoItems = [];
@@ -1146,13 +1169,15 @@ async function pintaUsuaris(st, avis) {
   const cap = `<h3>Usuaris</h3>`;
   const tornar = `<div class="acts"><button class="btn" id="sec-back" style="width:100%">Tornar a l'inici</button></div>`;
   if (!avis) show(`${cap}<div class="item">Carregant…</div>`);
-  let usuaris;
+  let usuaris, tels = null;
   try { usuaris = await llegeix('usuaris', {}); }
   catch (e) { show(cap + `<div class="item">${esc(errFs(e))}</div>` + tornar); $('sec-back').addEventListener('click', enrere); return; }
+  try { tels = await llegeixTelefons(); } catch (e) { tels = null; }
   if ($('modal').classList.contains('hidden') || !history.state || history.state.k !== 'usr') return;
   const jo = await hashTel(me.tel);
   const ll = Object.entries(usuaris).sort((a, b) => (a[1].nombre || '').localeCompare(b[1].nombre || '', 'ca'));
   show(`${cap}
+    ${tels ? '' : `<div class="item" style="border-left-color:var(--red)">${esc(ERR_PRIV)}</div>`}
     <h4 style="margin:6px 0 0">Nou usuari</h4>
     <label for="u-tel">Telèfon (9 xifres)</label><input id="u-tel" type="tel" inputmode="numeric" autocomplete="off">
     <label for="u-nom">Nom</label><input id="u-nom" type="text" maxlength="40" autocomplete="off">
@@ -1165,6 +1190,7 @@ async function pintaUsuaris(st, avis) {
     <h4 style="margin:18px 0 0">Usuaris actuals (${ll.length})</h4>
     ${ll.map(([h, u]) => `<div class="item">
         <div>${esc(u.nombre || '(sense nom)')}${u.rol === 'editor' ? ' <small style="color:var(--blue)">· editor</small>' : ''}${h === jo ? ' <small style="color:var(--mute)">(tu)</small>' : ''}</div>
+        ${tels ? `<div style="color:var(--mute);font-size:.8em;margin-top:2px">📞 ${tels[h] ? fmtTel(tels[h]) : 'sense telèfon'}</div>` : ''}
         <div style="display:flex;gap:10px;margin-top:10px">
           <button class="btn sec" data-u-mod="${h}" style="flex:1">Modificar</button>
           ${h === jo ? '' : `<button class="btn del" data-u-del="${h}" style="flex:1">Esborrar</button>`}
@@ -1182,6 +1208,7 @@ async function pintaUsuaris(st, avis) {
     if (rep.length) return err(rep.map(esc).join('<br>'));
     $('u-desa').disabled = true; $('u-err').textContent = '';
     try {
+      await desaTelefons(t => ({ ...t, [h]: tel }), 'Afegeix un telèfon');
       await modifica('usuaris', {}, d => {
         if (repeticions(d, h, nom).length) throw { code: ERR_DUP };
         return { ...d, [h]: { nombre: nom, rol } };
@@ -1192,7 +1219,7 @@ async function pintaUsuaris(st, avis) {
     }
     pintaUsuaris(st, `${nom} afegit correctament.`);
   });
-  document.querySelectorAll('[data-u-mod]').forEach(b => b.addEventListener('click', () => modUsuari(st, usuaris, b.dataset.uMod, jo)));
+  document.querySelectorAll('[data-u-mod]').forEach(b => b.addEventListener('click', () => modUsuari(st, usuaris, b.dataset.uMod, jo, tels)));
   document.querySelectorAll('[data-u-del]').forEach(b => b.addEventListener('click', () => {
     const h = b.dataset.uDel, u = usuaris[h] || {};
     show(`<h3>Esborrar usuari</h3>
@@ -1204,19 +1231,22 @@ async function pintaUsuaris(st, avis) {
     $('u-no').addEventListener('click', () => pintaUsuaris(st));
     $('u-si').addEventListener('click', async () => {
       $('u-si').disabled = true;
-      try { await modifica('usuaris', {}, d => { const n = { ...d }; delete n[h]; return n; }, 'Esborra un usuari'); }
+      try {
+        await modifica('usuaris', {}, d => { const n = { ...d }; delete n[h]; return n; }, 'Esborra un usuari');
+        await desaTelefons(t => { const n = { ...t }; delete n[h]; return n; }, 'Esborra un telèfon').catch(() => {});
+      }
       catch (e) { $('u-si').disabled = false; $('u-err').textContent = errFs(e); return; }
       pintaUsuaris(st, `${u.nombre || 'Usuari'} esborrat.`);
     });
   }));
 }
 // Pantalla per modificar el nom, el telèfon o el permís d'un usuari.
-function modUsuari(st, usuaris, h, jo) {
-  const u = usuaris[h] || {}, esJo = h === jo;
+function modUsuari(st, usuaris, h, jo, tels) {
+  const u = usuaris[h] || {}, esJo = h === jo, telAct = (tels && tels[h]) || '';
   show(`<h3>Modificar usuari</h3>
     <label for="m-nom">Nom</label><input id="m-nom" type="text" maxlength="40" autocomplete="off" value="${esc(u.nombre || '')}">
-    <label for="m-tel">Telèfon nou (9 xifres)</label><input id="m-tel" type="tel" inputmode="numeric" autocomplete="off">
-    <p style="color:var(--mute);font-size:.75em;margin:6px 0 0">Deixa-ho en blanc per mantenir el telèfon actual. Per seguretat, el telèfon actual no es pot mostrar.</p>
+    <label for="m-tel">Telèfon (9 xifres)</label><input id="m-tel" type="tel" inputmode="numeric" autocomplete="off" value="${esc(fmtTel(telAct))}">
+    ${telAct ? '' : `<p style="color:var(--mute);font-size:.75em;margin:6px 0 0">No tenim guardat el telèfon d'aquest usuari. Escriu-lo si el vols afegir, o deixa-ho en blanc per no canviar-lo.</p>`}
     <label for="m-rol">Permís</label>
     <select id="m-rol" ${esJo ? 'disabled' : ''}><option value="lector">Lector (només consulta)</option><option value="editor">Editor (pot fer canvis)</option></select>
     ${esJo ? `<p style="color:var(--mute);font-size:.75em;margin:6px 0 0">No et pots treure el permís d'editor a tu mateix.</p>` : ''}
@@ -1234,19 +1264,25 @@ function modUsuari(st, usuaris, h, jo) {
     let tel = '', hNou = h;
     if (telRaw) {
       tel = normTel(telRaw);
+      if (tel === telAct) tel = '';
+    }
+    if (tel) {
       if (tel.length < 9) return err('Escriu un telèfon de 9 xifres, o deixa-ho en blanc.');
       hNou = await hashTel(tel);
     }
-    if (nom === u.nombre && hNou === h && rol === u.rol) return err('No has canviat res.');
+    const telNou = tel && !telAct ? true : false;   // afegir el telèfon que faltava (mateix codi)
+    if (nom === u.nombre && hNou === h && rol === u.rol && !telNou) return err('No has canviat res.');
     const rep = repeticions(usuaris, hNou, nom, h);
     if (rep.length) return err(rep.map(esc).join('<br>'));
     $('m-desa').disabled = true; $('m-err').textContent = '';
     try {
+      if (tel) await desaTelefons(t => ({ ...t, [hNou]: tel }), 'Desa un telèfon');
       await modifica('usuaris', {}, d => {
         if (!d[h]) throw { code: 'gone' };
         if (repeticions(d, hNou, nom, h).length) throw { code: ERR_DUP };
         const n = { ...d }; delete n[h]; n[hNou] = { ...d[h], nombre: nom, rol }; return n;
       }, 'Modifica un usuari');
+      if (hNou !== h) await desaTelefons(t => { const n = { ...t }; delete n[h]; return n; }, 'Treu un telèfon antic').catch(() => {});
     } catch (e) {
       $('m-desa').disabled = false;
       if (e && e.code === 'gone') return err('Aquest usuari ja no existeix: algú l\'ha esborrat.');
@@ -1348,7 +1384,7 @@ function visorVideo(st) {
 
 // ---------- Versió i actualització automàtica ----------
 // Per publicar una versió nova, canvia NOMÉS APP_SEMVER (MAJOR.MINOR.PATCH) i actualitza el CHANGELOG.
-const APP_SEMVER = '2.3.0';
+const APP_SEMVER = '2.4.0';
 const APP_VERSION = 43; // llegat: perquè les còpies antigues (numerades amb enters) s'actualitzin una sola vegada. No cal tocar-lo.
 $('ver').textContent = 'Versió ' + APP_SEMVER;
 const cmpVer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0) ? 1 : -1; } return 0; };
