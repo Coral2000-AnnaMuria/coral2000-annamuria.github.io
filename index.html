@@ -1128,7 +1128,18 @@ function confirmaEsborrarInfo(it) {
 $('go-inf').addEventListener('click', () => vesA({ v: 'sec', k: 'inf' }));
 
 // ---------- Usuaris (només per als editors) ----------
-// Els telèfons es guarden codificats a «dades/usuaris.json»; per això a la llista només surten els noms.
+// Els telèfons es guarden codificats a «dades/usuaris.json»; per això a la llista només surten els noms
+// i, per canviar el telèfon d'algú, cal escriure el número nou (l'antic no es pot mostrar).
+const nomNorm = t => normQ(String(t || '')).replace(/\s+/g, ' ').trim();
+const ERR_DUP = 'dup';
+// Comprova repeticions dins d'unes dades d'usuaris. «excepte» = el codi de l'usuari que s'està modificant.
+function repeticions(d, hNou, nom, excepte) {
+  const errs = [];
+  if (hNou && hNou !== excepte && d[hNou]) errs.push(`Aquest telèfon ja és de ${d[hNou].nombre || 'un altre usuari'}. Si cal canviar-lo, fes servir «Modificar» en aquest usuari.`);
+  const igual = Object.entries(d).find(([h, u]) => h !== excepte && nomNorm(u.nombre) === nomNorm(nom));
+  if (igual) errs.push(`Ja hi ha un usuari amb el nom «${igual[1].nombre}». Afegeix-hi el cognom o una inicial per distingir-los.`);
+  return errs;
+}
 async function pintaUsuaris(st, avis) {
   AUD.pause();
   if (!me || !me.edit) return enrere();
@@ -1142,33 +1153,46 @@ async function pintaUsuaris(st, avis) {
   const jo = await hashTel(me.tel);
   const ll = Object.entries(usuaris).sort((a, b) => (a[1].nombre || '').localeCompare(b[1].nombre || '', 'ca'));
   show(`${cap}
+    <h4 style="margin:6px 0 0">Nou usuari</h4>
     <label for="u-tel">Telèfon (9 xifres)</label><input id="u-tel" type="tel" inputmode="numeric" autocomplete="off">
     <label for="u-nom">Nom</label><input id="u-nom" type="text" maxlength="40" autocomplete="off">
     <label for="u-rol">Permís</label>
     <select id="u-rol"><option value="lector">Lector (només consulta)</option><option value="editor">Editor (pot fer canvis)</option></select>
     <p id="u-err" style="color:var(--red);margin:8px 0 0"></p>
     <p id="u-ok" style="color:#1e7d3c;margin:8px 0 0">${esc(avis || '')}</p>
-    <button class="btn" id="u-desa" style="width:100%;margin-top:10px">Desar usuari</button>
-    <p style="color:var(--mute);font-size:.75em;margin:8px 0 0">Si el telèfon ja existeix, se n'actualitzen el nom i el permís. Els canvis arriben a l'aplicació en 1 o 2 minuts.</p>
+    <button class="btn" id="u-desa" style="width:100%;margin-top:10px">Afegir usuari</button>
+    <p style="color:var(--mute);font-size:.75em;margin:8px 0 0">Els canvis arriben a l'aplicació en 1 o 2 minuts.</p>
     <h4 style="margin:18px 0 0">Usuaris actuals (${ll.length})</h4>
-    ${ll.map(([h, u]) => `<div class="item" style="display:flex;align-items:center;gap:10px">
-        <span style="flex:1">${esc(u.nombre || '(sense nom)')}${u.rol === 'editor' ? ' <small style="color:var(--blue)">· editor</small>' : ''}${h === jo ? ' <small style="color:var(--mute)">(tu)</small>' : ''}</span>
-        ${h === jo ? '' : `<button class="btn del" data-u-del="${h}">Esborrar</button>`}
+    ${ll.map(([h, u]) => `<div class="item">
+        <div>${esc(u.nombre || '(sense nom)')}${u.rol === 'editor' ? ' <small style="color:var(--blue)">· editor</small>' : ''}${h === jo ? ' <small style="color:var(--mute)">(tu)</small>' : ''}</div>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <button class="btn sec" data-u-mod="${h}" style="flex:1">Modificar</button>
+          ${h === jo ? '' : `<button class="btn del" data-u-del="${h}" style="flex:1">Esborrar</button>`}
+        </div>
       </div>`).join('') || `<div class="item">Encara no hi ha cap usuari.</div>`}
     ${tornar}`);
   $('sec-back').addEventListener('click', enrere);
-  const err = t => { $('u-ok').textContent = ''; $('u-err').textContent = t; veureMsg($('u-err')); };
+  const err = t => { $('u-ok').textContent = ''; $('u-err').innerHTML = t; veureMsg($('u-err')); };
   $('u-desa').addEventListener('click', async () => {
-    const tel = normTel($('u-tel').value), nom = $('u-nom').value.trim(), rol = $('u-rol').value;
+    const tel = normTel($('u-tel').value), nom = $('u-nom').value.trim().replace(/\s+/g, ' '), rol = $('u-rol').value;
     if (tel.length < 9) return err('Escriu un telèfon de 9 xifres.');
     if (!nom) return err('Escriu el nom.');
     const h = await hashTel(tel);
-    if (h === jo && rol !== 'editor') return err("No et pots treure el permís d'editor a tu mateix.");
+    const rep = repeticions(usuaris, h, nom);
+    if (rep.length) return err(rep.map(esc).join('<br>'));
     $('u-desa').disabled = true; $('u-err').textContent = '';
-    try { await modifica('usuaris', {}, d => ({ ...d, [h]: { nombre: nom, rol } }), 'Afegeix o modifica un usuari'); }
-    catch (e) { $('u-desa').disabled = false; return err(errFs(e)); }
-    pintaUsuaris(st, `${nom} desat correctament.`);
+    try {
+      await modifica('usuaris', {}, d => {
+        if (repeticions(d, h, nom).length) throw { code: ERR_DUP };
+        return { ...d, [h]: { nombre: nom, rol } };
+      }, 'Afegeix un usuari');
+    } catch (e) {
+      $('u-desa').disabled = false;
+      return err(e && e.code === ERR_DUP ? "Mentrestant, un altre editor ha afegit un usuari amb aquest telèfon o aquest nom. Torna a entrar a Usuaris i revisa-ho." : esc(errFs(e)));
+    }
+    pintaUsuaris(st, `${nom} afegit correctament.`);
   });
+  document.querySelectorAll('[data-u-mod]').forEach(b => b.addEventListener('click', () => modUsuari(st, usuaris, b.dataset.uMod, jo)));
   document.querySelectorAll('[data-u-del]').forEach(b => b.addEventListener('click', () => {
     const h = b.dataset.uDel, u = usuaris[h] || {};
     show(`<h3>Esborrar usuari</h3>
@@ -1185,6 +1209,53 @@ async function pintaUsuaris(st, avis) {
       pintaUsuaris(st, `${u.nombre || 'Usuari'} esborrat.`);
     });
   }));
+}
+// Pantalla per modificar el nom, el telèfon o el permís d'un usuari.
+function modUsuari(st, usuaris, h, jo) {
+  const u = usuaris[h] || {}, esJo = h === jo;
+  show(`<h3>Modificar usuari</h3>
+    <label for="m-nom">Nom</label><input id="m-nom" type="text" maxlength="40" autocomplete="off" value="${esc(u.nombre || '')}">
+    <label for="m-tel">Telèfon nou (9 xifres)</label><input id="m-tel" type="tel" inputmode="numeric" autocomplete="off">
+    <p style="color:var(--mute);font-size:.75em;margin:6px 0 0">Deixa-ho en blanc per mantenir el telèfon actual. Per seguretat, el telèfon actual no es pot mostrar.</p>
+    <label for="m-rol">Permís</label>
+    <select id="m-rol" ${esJo ? 'disabled' : ''}><option value="lector">Lector (només consulta)</option><option value="editor">Editor (pot fer canvis)</option></select>
+    ${esJo ? `<p style="color:var(--mute);font-size:.75em;margin:6px 0 0">No et pots treure el permís d'editor a tu mateix.</p>` : ''}
+    <p id="m-err" style="color:var(--red);margin:8px 0 0"></p>
+    <div class="acts" style="flex-direction:column;align-items:stretch">
+      <button class="btn" id="m-desa">Desar els canvis</button>
+      <button class="btn sec" id="m-no">Cancel·lar</button></div>`);
+  $('m-rol').value = u.rol === 'editor' ? 'editor' : 'lector';
+  const err = t => { $('m-err').innerHTML = t; veureMsg($('m-err')); };
+  $('m-no').addEventListener('click', () => pintaUsuaris(st));
+  $('m-desa').addEventListener('click', async () => {
+    const nom = $('m-nom').value.trim().replace(/\s+/g, ' '), telRaw = $('m-tel').value.trim();
+    const rol = esJo ? 'editor' : $('m-rol').value;
+    if (!nom) return err('Escriu el nom.');
+    let tel = '', hNou = h;
+    if (telRaw) {
+      tel = normTel(telRaw);
+      if (tel.length < 9) return err('Escriu un telèfon de 9 xifres, o deixa-ho en blanc.');
+      hNou = await hashTel(tel);
+    }
+    if (nom === u.nombre && hNou === h && rol === u.rol) return err('No has canviat res.');
+    const rep = repeticions(usuaris, hNou, nom, h);
+    if (rep.length) return err(rep.map(esc).join('<br>'));
+    $('m-desa').disabled = true; $('m-err').textContent = '';
+    try {
+      await modifica('usuaris', {}, d => {
+        if (!d[h]) throw { code: 'gone' };
+        if (repeticions(d, hNou, nom, h).length) throw { code: ERR_DUP };
+        const n = { ...d }; delete n[h]; n[hNou] = { ...d[h], nombre: nom, rol }; return n;
+      }, 'Modifica un usuari');
+    } catch (e) {
+      $('m-desa').disabled = false;
+      if (e && e.code === 'gone') return err('Aquest usuari ja no existeix: algú l\'ha esborrat.');
+      return err(e && e.code === ERR_DUP ? "Mentrestant, un altre editor ha fet servir aquest telèfon o aquest nom. Torna-ho a revisar." : esc(errFs(e)));
+    }
+    if (esJo && tel) { me.tel = tel; localStorage.setItem('cg_tel', tel); }
+    if (esJo) { me.nom = nom; $('who').textContent = nom; $('who2').textContent = nom; }
+    pintaUsuaris(st, `${nom} modificat correctament.`);
+  });
 }
 $('go-usr').addEventListener('click', () => vesA({ v: 'sec', k: 'usr' }));
 
@@ -1277,7 +1348,7 @@ function visorVideo(st) {
 
 // ---------- Versió i actualització automàtica ----------
 // Per publicar una versió nova, canvia NOMÉS APP_SEMVER (MAJOR.MINOR.PATCH) i actualitza el CHANGELOG.
-const APP_SEMVER = '2.2.0';
+const APP_SEMVER = '2.3.0';
 const APP_VERSION = 43; // llegat: perquè les còpies antigues (numerades amb enters) s'actualitzin una sola vegada. No cal tocar-lo.
 $('ver').textContent = 'Versió ' + APP_SEMVER;
 const cmpVer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0) ? 1 : -1; } return 0; };
