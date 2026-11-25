@@ -10,5 +10,221 @@
  "f14a8721ca574218c3ed30cb5735f6b7274711152dcba909fc1774981536b944": {
   "nombre": "Anna",
   "rol": "editor"
+ },
+ "7095eb927cf97fef85d42d2e210361c2f5755636071485618f8061ec118227ac": {
+  "nombre": "Usuari 1",
+  "rol": "lector"
+ },
+ "28977f47356ef0e7cbfdbc171914a99fe6b3f7e842c3fd80588b03f5c2d47457": {
+  "nombre": "Usuari 2",
+  "rol": "lector"
+ },
+ "3e2b9d02d65a19b909046cc526e57c2d92631e4394c00126553879f0c185b12a": {
+  "nombre": "Albert",
+  "rol": "lector"
+ },
+ "d94cc64652d5f78fd595869249059447361f64bd131d9ff16ed3dc3f7e688c3a": {
+  "nombre": "Ana Losada",
+  "rol": "lector"
+ },
+ "d481f9ff8db365e48fa851b0a16b7c6c6af3815195a229f9b91f94d50f69c54c": {
+  "nombre": "Angela",
+  "rol": "lector"
+ },
+ "457f4a4818780341c63eee9c0c32dff254cfd6ca56d1272b92c8f9b43922d69b": {
+  "nombre": "Angels",
+  "rol": "lector"
+ },
+ "edfb730df37abe29f982ff239922eb85c1037a7d0b91afa8926f182e5bfd343c": {
+  "nombre": "Anna Castellà",
+  "rol": "lector"
+ },
+ "b4284859a7b2f6fc8293f3ed20fee9a99e01b794c0158b03796a4893051b77c5": {
+  "nombre": "Antonia",
+  "rol": "lector"
+ },
+ "2f7142219610e9864e6fd45cfb7cca76cfdb9430403055787107ba3c153afe54": {
+  "nombre": "Arseni Florensa",
+  "rol": "lector"
+ },
+ "c0e8ed98229a60a8c0af040f02420e3560e11baf026ab95ee6cb193f62ac2248": {
+  "nombre": "Assumpta",
+  "rol": "lector"
+ },
+ "2b82ea7b3e1a38b0656a82bc4075490346f23a34627a29aacecd5df4bade4dd3": {
+  "nombre": "Asun",
+  "rol": "lector"
+ },
+ "2b800b49c173b79db502e96c2f1fba5a288f5c208cbbb5f8508f0e5f955f44ab": {
+  "nombre": "Carme Vila Torras",
+  "rol": "lector"
+ },
+ "31850dbd047fcfc0570e07ef26668139c738f7dfa01a6cd1e9f334587af1f1b5": {
+  "nombre": "Dolors Ribera",
+  "rol": "lector"
+ },
+ "f9204a0daf7055b6eb4ec8e803476bf8a4102789dc9538f1f0e9e89072ef39bf": {
+  "nombre": "Encarna",
+  "rol": "lector"
+ },
+ "c5c428e495c8aaef2c07293d3d33ab13c92facce0aaafa64bd1cd9d7077893a1": {
+  "nombre": "Encarnacion Hernandez Gas",
+  "rol": "lector"
+ },
+ "2260b2459a3c1706b8854efda7a604b8d1b7e0413c71e556e12c1a256e5a9a02": {
+  "nombre": "Fefa",
+  "rol": "lector"
+ },
+ "5ea118825b9510dce6dd0f8e75a7a86e58875826ebdd9ebc0d24a03d877ce223": {
+  "nombre": "Fina Vila",
+  "rol": "lector"
+ },
+ "a04fd351fddc947b02591ef516847bdcee401995e1d3637aa46729a01e9bce27": {
+  "nombre": "Isabel",
+  "rol": "lector"
+ },
+ "bc2a6da354d4f0eaf82bae7feac6d535dbdbd68f134ad5c1e3ca720d80d49ccc": {
+  "nombre": "Joan Palà",
+  "rol": "lector"
+ },
+ "b21836219f14a6f9dbb40b3c26b19dd00a11b16d8ef3ce9ae2d34d10609f41e3": {
+  "nombre": "Joana",
+  "rol": "lector"
+ },
+ "4b21f19caf0907e0cb0df0019eb4da8bad3b62cf9d6bf2c07988106fc7862315": {
+  "nombre": "Jordi Boltes",
+  "rol": "lector"
+ },
+ "97fb557a7dc4f46beec06e91ccd77b97a44e42c560153b0c8c5bd39c602dd015": {
+  "nombre": "Josep Palà",
+  "rol": "lector"
+ },
+ "a7f6a24a0c13dee4894d789425d026de1526fe3d737980b7489f35b073b70bd6": {
+  "nombre": "Juan Fuste",
+  "rol": "lector"
+ },
+ "653abe3c8e987cd8d2ed6b411af31a04a426243c9027958bca77ba346493aa39": {
+  "nombre": "Lola Puig",
+  "rol": "lector"
+ },
+ "6e5aa3d2b9bb2d9ed3609886823ac33af8eae4c28384f901baf6e5edf346cd03": {
+  "nombre": "Lurdes Retres",
+  "rol": "lector"
+ },
+ "1f150332579487142ee172ec4e0a91bbb9188238c1240601f35013c0696485e3": {
+  "nombre": "Lydia",
+  "rol": "lector"
+ },
+ "103f0f6c22e76304a67cc4bbb15e3d61f3ae82f1641f59a698a2fdcb34319fa0": {
+  "nombre": "Maria Rosa Garcia",
+  "rol": "lector"
+ },
+ "e5d8b478e6fffee9b7fcb22f9167f0131e675be71364b26ff1892b8dcb98630c": {
+  "nombre": "Maria Roset",
+  "rol": "lector"
+ },
+ "e8e337e843af5374afe12b1e1a73ba64f5feb44e65d45048c4caced586596f63": {
+  "nombre": "Maria Teresa",
+  "rol": "lector"
+ },
+ "8e5f54d9520bd90de233f9b9fa581a535243c941ef5193cfd05b63df2202221a": {
+  "nombre": "Mariarosa",
+  "rol": "lector"
+ },
+ "5fa2bb79349b4bddd5a71ab3c7632c15010c1b5b579f35fe206b1170217e7541": {
+  "nombre": "Mariona Sala Gaudier",
+  "rol": "lector"
+ },
+ "d6468803367b418da4c44dd69a53658b2daf4e3329ad20f7db3e0455d7b1a084": {
+  "nombre": "Mercé",
+  "rol": "lector"
+ },
+ "a27cad081aa03693d738e1e50cf89acbca0a1e33009e85751b4efbe08357b6ef": {
+  "nombre": "Merce",
+  "rol": "lector"
+ },
+ "4e84e1053128111df3b69c9699290e3778c00237d5547c063fedc297c947eb97": {
+  "nombre": "Mikbachs",
+  "rol": "lector"
+ },
+ "e491f9e72e7ba805f6bb3d91a849084f248f0efbb97b9a8685f878dfb4c3c6c4": {
+  "nombre": "Nuria",
+  "rol": "lector"
+ },
+ "57a0651c361b9e3cd94949ae5613ae077525c5caa7b73f50d778d7062e116d8e": {
+  "nombre": "Núria Majó Ubach",
+  "rol": "lector"
+ },
+ "40e2633596cf50f72971925c3fe0172aee01777815c3c94aedca069893d4f4ab": {
+  "nombre": "Paquita",
+  "rol": "lector"
+ },
+ "fd46dafa6307a02f47e1a3039ef3d517353534c585e729b5e7a0458422172651": {
+  "nombre": "Pere Cusido Ferras",
+  "rol": "lector"
+ },
+ "e6e3f41ddeeb4d3bd6b8c5943b0128530fdd3dfa1b39430b03616ecd4b7042d6": {
+  "nombre": "Pilar",
+  "rol": "lector"
+ },
+ "69771cb2b155934cab9df0d6fc3cd24adcf8ae78ead5d4dbef163e93adc2333a": {
+  "nombre": "Rosa",
+  "rol": "lector"
+ },
+ "2482f31dd9299cbdd3fafab6cd0d57d420b3b5e0ec170b33982a23cd6a191862": {
+  "nombre": "Rosa S.",
+  "rol": "lector"
+ },
+ "996c38b12f1fcf5364605c4430b9750dd6b1ecd21112ceb0e79cb9b06483c748": {
+  "nombre": "Salvador Llobet",
+  "rol": "lector"
+ },
+ "b5a2b7188a5c5afbef26d94049eaf7a89c0888a5043e673bce555d6f54ee84d4": {
+  "nombre": "Teresa Miquel",
+  "rol": "lector"
+ },
+ "855d19f69eadf86b070910cea38ce8f5db29347ed5969759964ec4948226af7f": {
+  "nombre": "Yy",
+  "rol": "lector"
+ },
+ "1b690432d93273947657fef1d122cc6ded2ed32e101b7d295ac5b75290dcdbce": {
+  "nombre": "Usuari 3",
+  "rol": "lector"
+ },
+ "67c94a3a911bdf8fcbcdfa6fb07fb8a947f2cf9aa2375604152910beaf204478": {
+  "nombre": "Usuari 4",
+  "rol": "lector"
+ },
+ "22958540b3a261a6addf298b0cfe03d87a54ee24e36117e1c6955d988d45af21": {
+  "nombre": "Usuari 5",
+  "rol": "lector"
+ },
+ "cce4d5e9488a12d5b3a0eb2fc0e99b1e86be2c9e8aecd22569c072bab5cb4e8a": {
+  "nombre": "Usuari 6",
+  "rol": "lector"
+ },
+ "f22d6bde2f6b8f9334cad12f6acbc108bd7eeeea94cc9f9f53d2b98cd3354aa5": {
+  "nombre": "Usuari 7",
+  "rol": "lector"
+ },
+ "73f4b5b57d54a2310844c1e50b3227d3fc130b643119403a297f1e64040ecfce": {
+  "nombre": "Usuari 8",
+  "rol": "lector"
+ },
+ "a659906141c5becba9f5bf5004d8018f03cd83cf5894ce330d8e8fba9f258e2a": {
+  "nombre": "Usuari 9",
+  "rol": "lector"
+ },
+ "6eb7607d3208e1582d9525aadcfe70b6d6ddb4b976c47b2faa1a030f98ace899": {
+  "nombre": "Usuari 10",
+  "rol": "lector"
+ },
+ "55fddaa8830d63db9e4e1d2418ce3a4700b5ed01efa6e8a72c15ea072bd597fe": {
+  "nombre": "Usuari 11",
+  "rol": "lector"
+ },
+ "506ad3bec3a042d9bb2d486b08c2411d4e6fccf83360b762c23a3643d379306d": {
+  "nombre": "Usuari 12",
+  "rol": "lector"
  }
 }
